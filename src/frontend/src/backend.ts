@@ -137,6 +137,7 @@ export interface backendInterface {
     login(username: string, password: string): Promise<{
         token: string;
         role: string;
+        mustChangePassword: boolean;
     }>;
     logout(token: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
@@ -390,6 +391,7 @@ export class Backend implements backendInterface {
     async login(arg0: string, arg1: string): Promise<{
         token: string;
         role: string;
+        mustChangePassword: boolean;
     }> {
         if (this.processError) {
             try {

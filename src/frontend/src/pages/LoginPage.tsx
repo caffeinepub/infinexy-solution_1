@@ -26,13 +26,17 @@ export default function LoginPage({ onLogin }: Props) {
     }
     setLoading(true);
     try {
-      const { token, role } = await actor.login(username.trim(), password);
+      const { token, role, mustChangePassword } = await actor.login(
+        username.trim(),
+        password,
+      );
       saveToken(token);
       const session: Session = {
         token,
         role: role === "admin" ? "admin" : "executive",
         username: username.trim(),
         name: username.trim(),
+        mustChangePassword: mustChangePassword ?? false,
       };
       onLogin(session);
       toast.success(`Welcome back, ${username.trim()}!`);
@@ -51,15 +55,15 @@ export default function LoginPage({ onLogin }: Props) {
       <div className="w-full max-w-md px-4">
         {/* Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white border border-border shadow-sm mb-4">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-white border border-border shadow-sm mb-4 overflow-hidden">
             <img
-              src="/assets/generated/infinexy-logo-transparent.dim_200x200.png"
-              alt="Infinexy Logo"
-              className="w-14 h-14 object-contain"
+              src="/assets/uploads/screenshot_2026-03-13_121927-019d2ed7-50ab-74aa-a693-521347dd215f-1.png"
+              alt="Company Logo"
+              className="w-full h-full object-contain"
             />
           </div>
           <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            Infinexy Solution
+            Profit Customer Gained
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             Profit Management Dashboard

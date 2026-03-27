@@ -58,7 +58,7 @@ export interface _SERVICE {
   >,
   'login' : ActorMethod<
     [string, string],
-    { 'token' : string, 'role' : string }
+    { 'token' : string, 'role' : string, 'mustChangePassword' : boolean }
   >,
   'logout' : ActorMethod<[string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,

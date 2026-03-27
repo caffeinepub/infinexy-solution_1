@@ -86,7 +86,7 @@ export const idlService = IDL.Service({
     ),
   'login' : IDL.Func(
       [IDL.Text, IDL.Text],
-      [IDL.Record({ 'token' : IDL.Text, 'role' : IDL.Text })],
+      [IDL.Record({ 'token' : IDL.Text, 'role' : IDL.Text, 'mustChangePassword' : IDL.Bool })],
       [],
     ),
   'logout' : IDL.Func([IDL.Text], [], []),
@@ -197,8 +197,8 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'login' : IDL.Func(
-        [IDL.Text, IDL.Text],
-        [IDL.Record({ 'token' : IDL.Text, 'role' : IDL.Text })],
+      [IDL.Text, IDL.Text],
+      [IDL.Record({ 'token' : IDL.Text, 'role' : IDL.Text, 'mustChangePassword' : IDL.Bool })],
         [],
       ),
     'logout' : IDL.Func([IDL.Text], [], []),

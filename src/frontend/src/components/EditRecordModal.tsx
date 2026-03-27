@@ -128,19 +128,6 @@ export default function EditRecordModal({
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Daily Target Amount (₹)</Label>
-            <Input
-              data-ocid="edit_record.input"
-              type="number"
-              min="0"
-              step="0.01"
-              value={dailyTarget}
-              onChange={(e) => setDailyTarget(e.target.value)}
-              placeholder="0.00"
-              required
-            />
-          </div>
-          <div className="space-y-1.5">
             <Label>Customer Daily Amount Target (₹)</Label>
             <Input
               data-ocid="edit_record.input"

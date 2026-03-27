@@ -96,6 +96,7 @@ actor {
   let sessions = Map.empty<Text, Session>();
   let profitRecords = Map.empty<Nat, ProfitRecord>();
   let executiveDirectory = Map.empty<Nat, Executive>();
+  let executiveMustChangePassword = Map.empty<Nat, Bool>();
   let sessionsByPrincipal = Map.empty<Principal, [Text]>();
 
   // Session Management
@@ -133,7 +134,7 @@ actor {
   };
 
   // Authentication
-  public shared ({ caller }) func login(username : Text, password : Text) : async { token : Text; role : Text } {
+  public shared ({ caller }) func login(username : Text, password : Text) : async { token : Text; role : Text; mustChangePassword : Bool } {
     let role : Text = if (username == adminUsername and password == adminPassword) {
       "admin";
     } else {
@@ -181,7 +182,18 @@ actor {
       };
     };
 
-    { token = token; role = role };
+    let mustChangePassword : Bool = if (role == "executive") {
+      switch (executivesByUsername.get(username)) {
+        case (?execId) {
+          switch (executiveMustChangePassword.get(execId)) {
+            case (?flag) { flag };
+            case (null) { false };
+          };
+        };
+        case (null) { false };
+      };
+    } else { false };
+    { token = token; role = role; mustChangePassword = mustChangePassword };
   };
 
   public shared ({ caller = _ }) func validateSession(token : Text) : async { username : Text; role : Text } {
@@ -244,6 +256,7 @@ actor {
                   exec with password = newPassword
                 };
                 executiveDirectory.add(execId, updatedExec);
+                executiveMustChangePassword.add(execId, false);
                 invalidateUserSessions(username);
               };
               case (null) {
@@ -281,6 +294,7 @@ actor {
         };
 
         executiveDirectory.add(id, executive);
+        executiveMustChangePassword.add(id, true);
         executivesByUsername.add(username, id);
         id;
       };
@@ -384,12 +398,12 @@ actor {
             };
             profitRecords.add(recordId, updatedRecord);
 
-            // Auto-update dailyTarget for all records with same executiveName
-            if (existingRecord.executiveName == executiveName and existingRecord.dailyTarget != dailyTarget) {
+            // Auto-update customerDailyTarget and dailyTarget for all records with same executiveName
+            if (customerDailyTarget != 0.0) {
               for ((id, record) in profitRecords.entries()) {
                 if (record.executiveName == executiveName and id != recordId) {
                   let autoUpdatedRecord : ProfitRecord = {
-                    record with dailyTarget = dailyTarget
+                    record with customerDailyTarget = customerDailyTarget
                   };
                   profitRecords.add(id, autoUpdatedRecord);
                 };

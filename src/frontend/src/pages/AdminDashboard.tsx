@@ -302,7 +302,7 @@ export default function AdminDashboard({ session, onLogout }: Props) {
     const rows = records
       .map(
         (r, i) =>
-          `${i + 1},"${r.date}","${r.customerName}",${r.amountReceived},${r.dailyTarget},${r.customerTotalReceived || 0},"${r.executiveName}"`,
+          `${i + 1},"${r.date}","${r.customerName}",${r.amountReceived},${r.customerDailyTarget ?? 0},${r.customerTotalReceived || 0},"${r.executiveName}"`,
       )
       .join("\n");
     const blob = new Blob([header + rows], { type: "text/csv" });
@@ -718,7 +718,7 @@ export default function AdminDashboard({ session, onLogout }: Props) {
                                 {formatCurrency(r.amountReceived)}
                               </TableCell>
                               <TableCell className="text-card-foreground/70 text-sm">
-                                {formatCurrency(r.dailyTarget)}
+                                {formatCurrency(r.customerDailyTarget ?? 0)}
                               </TableCell>
                               <TableCell className="text-card-foreground/70 text-sm">
                                 {formatCurrency(r.customerTotalReceived || 0)}
@@ -848,7 +848,7 @@ export default function AdminDashboard({ session, onLogout }: Props) {
                                     {formatCurrency(r.amountReceived)}
                                   </TableCell>
                                   <TableCell className="text-card-foreground/70 text-sm">
-                                    {formatCurrency(r.dailyTarget)}
+                                    {formatCurrency(r.customerDailyTarget ?? 0)}
                                   </TableCell>
                                   <TableCell className="text-card-foreground/70 text-sm">
                                     {r.customerTotalReceived != null &&

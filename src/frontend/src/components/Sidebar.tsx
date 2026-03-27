@@ -64,15 +64,15 @@ export default function Sidebar({
     >
       <div className="flex items-center gap-3 px-5 py-5 border-b border-sidebar-border">
         <img
-          src="/assets/generated/infinexy-logo-transparent.dim_200x200.png"
-          alt="Infinexy Logo"
-          className="w-8 h-8 rounded-lg object-contain flex-shrink-0"
+          src="/assets/uploads/screenshot_2026-03-13_121927-019d2ed7-50ab-74aa-a693-521347dd215f-1.png"
+          alt="Company Logo"
+          className="w-10 h-10 rounded-lg object-contain flex-shrink-0"
         />
         <div>
-          <p className="text-sidebar-foreground font-bold text-sm leading-tight">
-            Infinexy
+          <p className="text-sidebar-foreground font-bold text-xs leading-tight">
+            Profit Customer
           </p>
-          <p className="text-muted-foreground text-xs">Solution</p>
+          <p className="text-muted-foreground text-xs">Gained</p>
         </div>
       </div>
 

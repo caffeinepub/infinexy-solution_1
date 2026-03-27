@@ -19,6 +19,7 @@ export interface Executive {
 }
 
 export interface Session {
+  mustChangePassword?: boolean;
   token: string;
   role: "admin" | "executive";
   username: string;

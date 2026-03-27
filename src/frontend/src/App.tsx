@@ -27,6 +27,7 @@ export default function App() {
           role: role === "admin" ? "admin" : "executive",
           username,
           name: username,
+          mustChangePassword: false,
         });
       })
       .catch(() => {

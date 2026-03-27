@@ -90,6 +90,9 @@ export default function ExecutiveDashboard({ session, onLogout }: Props) {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [forcedNewPwd, setForcedNewPwd] = useState("");
+  const [forcedConfirmPwd, setForcedConfirmPwd] = useState("");
+  const [forcedSubmitting, setForcedSubmitting] = useState(false);
 
   const loadMyRecords = useCallback(async () => {
     if (!actor) return;
@@ -171,6 +174,101 @@ export default function ExecutiveDashboard({ session, onLogout }: Props) {
   };
 
   const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - 2 + i);
+
+  const handleForcedPasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!actor) return;
+    if (forcedNewPwd.length < 4) {
+      toast.error("Password must be at least 4 characters");
+      return;
+    }
+    if (forcedNewPwd !== forcedConfirmPwd) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    setForcedSubmitting(true);
+    try {
+      await actor.changeExecutivePassword(
+        session.token,
+        session.username,
+        forcedNewPwd,
+      );
+      toast.success("Password changed successfully. Please login again.");
+      setTimeout(() => {
+        clearToken();
+        onLogout();
+      }, 1500);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to update password");
+    } finally {
+      setForcedSubmitting(false);
+    }
+  };
+
+  if (session.mustChangePassword) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "oklch(0.96 0.01 265)" }}
+      >
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-2xl shadow-lg border border-border p-8">
+            <div className="flex flex-col items-center mb-6">
+              <img
+                src="/assets/uploads/screenshot_2026-03-13_121927-019d2ed7-50ab-74aa-a693-521347dd215f-1.png"
+                alt="Profit Customer Gained"
+                className="h-16 w-auto mb-3 object-contain"
+              />
+              <h1 className="text-xl font-bold text-foreground">
+                Profit Customer Gained
+              </h1>
+            </div>
+            <div className="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg text-center">
+              <p className="text-amber-800 font-medium text-sm">
+                You must change your password before continuing.
+              </p>
+            </div>
+            <form onSubmit={handleForcedPasswordChange} className="space-y-4">
+              <div>
+                <Label htmlFor="forced-new-pwd">New Password</Label>
+                <Input
+                  id="forced-new-pwd"
+                  type="password"
+                  value={forcedNewPwd}
+                  onChange={(e) => setForcedNewPwd(e.target.value)}
+                  placeholder="Enter new password"
+                  required
+                  data-ocid="forced_change.input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="forced-confirm-pwd">Confirm New Password</Label>
+                <Input
+                  id="forced-confirm-pwd"
+                  type="password"
+                  value={forcedConfirmPwd}
+                  onChange={(e) => setForcedConfirmPwd(e.target.value)}
+                  placeholder="Confirm new password"
+                  required
+                  data-ocid="forced_change.input"
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={forcedSubmitting}
+                data-ocid="forced_change.submit_button"
+              >
+                {forcedSubmitting
+                  ? "Changing..."
+                  : "Change Password & Continue"}
+              </Button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

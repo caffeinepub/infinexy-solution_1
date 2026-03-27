@@ -54,6 +54,7 @@ export interface backendInterface {
     login(username: string, password: string): Promise<{
         token: string;
         role: string;
+        mustChangePassword: boolean;
     }>;
     logout(token: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
