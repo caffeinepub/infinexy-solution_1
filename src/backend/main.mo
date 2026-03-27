@@ -7,13 +7,13 @@ import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Float "mo:core/Float";
-import Migration "migration";
+
 
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
 // Use migration for persistent actors
-(with migration = Migration.run)
+
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -100,7 +100,7 @@ actor {
 
   // Session Management
   func generateSessionToken(id : Nat) : Text {
-    "session_" # id.toText() # "_" # Int.toText(Time.now())
+    "session_" # id.toText() # "_" # Time.now().toText()
   };
 
   func getSession(token : Text) : ?Session {
@@ -184,10 +184,10 @@ actor {
     { token = token; role = role };
   };
 
-  public shared ({ caller }) func validateSession(token : Text) : async { username : Text; role : Text } {
+  public shared ({ caller = _ }) func validateSession(token : Text) : async { username : Text; role : Text } {
     switch (validateSessionToken(token)) {
-      case (?(username, role)) {
-        { username = username; role = role };
+      case (?(username, role_)) {
+        { username = username; role = role_ };
       };
       case (null) {
         Runtime.trap("Invalid session token");
@@ -210,7 +210,7 @@ actor {
   };
 
   // Password Management
-  public shared ({ caller }) func changeAdminPassword(token : Text, oldPassword : Text, newPassword : Text) : async () {
+  public shared ({ caller = _ }) func changeAdminPassword(token : Text, oldPassword : Text, newPassword : Text) : async () {
     switch (validateSessionToken(token)) {
       case (?(username, "admin")) {
         if (username != adminUsername) {
@@ -228,7 +228,7 @@ actor {
     };
   };
 
-  public shared ({ caller }) func changeExecutivePassword(token : Text, username : Text, newPassword : Text) : async () {
+  public shared ({ caller = _ }) func changeExecutivePassword(token : Text, username : Text, newPassword : Text) : async () {
     switch (validateSessionToken(token)) {
       case (?(sessionUsername, sessionRole)) {
         // Admin can change any executive password, executive can change their own
@@ -263,11 +263,7 @@ actor {
   };
 
   // Executive Management (Admin only)
-  public shared ({ caller }) func addExecutive(token : Text, name : Text, username : Text, password : Text) : async Nat {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can add executives");
-    };
-
+  public shared ({ caller = _ }) func addExecutive(token : Text, name : Text, username : Text, password : Text) : async Nat {
     switch (validateSessionToken(token)) {
       case (?(_, "admin")) {
         if (executivesByUsername.containsKey(username)) {
@@ -294,11 +290,7 @@ actor {
     };
   };
 
-  public shared ({ caller }) func deleteExecutive(token : Text, executiveId : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can delete executives");
-    };
-
+  public shared ({ caller = _ }) func deleteExecutive(token : Text, executiveId : Nat) : async () {
     switch (validateSessionToken(token)) {
       case (?(_, "admin")) {
         switch (executiveDirectory.get(executiveId)) {
@@ -318,11 +310,7 @@ actor {
     };
   };
 
-  public query ({ caller }) func listExecutives(token : Text) : async [Executive] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can list executives");
-    };
-
+  public query ({ caller = _ }) func listExecutives(token : Text) : async [Executive] {
     switch (validateSessionToken(token)) {
       case (?(_, "admin")) {
         let execsIter = executiveDirectory.values();
@@ -334,7 +322,7 @@ actor {
     };
   };
 
-  public query ({ caller }) func getExecutive(token : Text, id : Nat) : async ?Executive {
+  public query ({ caller = _ }) func getExecutive(token : Text, id : Nat) : async ?Executive {
     switch (validateSessionToken(token)) {
       case (?_) {
         executiveDirectory.get(id);
@@ -352,9 +340,9 @@ actor {
     id;
   };
 
-  public shared ({ caller }) func addRecord(token : Text, date : Text, customerName : Text, amountReceived : Float, dailyTarget : Float, customerDailyTarget : Float, customerTotalReceived : Float, executiveName : Text) : async Nat {
+  public shared ({ caller = _ }) func addRecord(token : Text, date : Text, customerName : Text, amountReceived : Float, dailyTarget : Float, customerDailyTarget : Float, customerTotalReceived : Float, executiveName : Text) : async Nat {
     switch (validateSessionToken(token)) {
-      case (?(username, role)) {
+      case (?(username, _role)) {
         let id = getNextProfitRecordId();
         let newRecord : ProfitRecord = {
           id = id;
@@ -377,9 +365,9 @@ actor {
     };
   };
 
-  public shared ({ caller }) func updateRecord(token : Text, recordId : Nat, date : Text, customerName : Text, amountReceived : Float, dailyTarget : Float, customerDailyTarget : Float, customerTotalReceived : Float, executiveName : Text) : async () {
+  public shared ({ caller = _ }) func updateRecord(token : Text, recordId : Nat, date : Text, customerName : Text, amountReceived : Float, dailyTarget : Float, customerDailyTarget : Float, customerTotalReceived : Float, executiveName : Text) : async () {
     switch (validateSessionToken(token)) {
-      case (?(username, role)) {
+      case (?(_, _)) {
         switch (profitRecords.get(recordId)) {
           case (?existingRecord) {
             let updatedRecord : ProfitRecord = {
@@ -419,9 +407,9 @@ actor {
     };
   };
 
-  public shared ({ caller }) func deleteRecord(token : Text, recordId : Nat) : async () {
+  public shared ({ caller = _ }) func deleteRecord(token : Text, recordId : Nat) : async () {
     switch (validateSessionToken(token)) {
-      case (?(username, role)) {
+      case (?(_, _)) {
         if (not profitRecords.containsKey(recordId)) {
           Runtime.trap("Profit record not found");
         };
@@ -433,7 +421,7 @@ actor {
     };
   };
 
-  public query ({ caller }) func listAllRecords(token : Text) : async [ProfitRecord] {
+  public query ({ caller = _ }) func listAllRecords(token : Text) : async [ProfitRecord] {
     switch (validateSessionToken(token)) {
       case (?_) {
         let recordsIter = profitRecords.values();
@@ -445,7 +433,7 @@ actor {
     };
   };
 
-  public query ({ caller }) func listRecordsByMonth(token : Text, month : Nat, year : Nat) : async [ProfitRecord] {
+  public query ({ caller = _ }) func listRecordsByMonth(token : Text, month : Nat, year : Nat) : async [ProfitRecord] {
     switch (validateSessionToken(token)) {
       case (?_) {
         let monthStr = if (month < 10) { "0" # month.toText() } else { month.toText() };
@@ -465,7 +453,7 @@ actor {
     };
   };
 
-  public query ({ caller }) func listRecordsByExecutive(token : Text, executiveName : Text) : async [ProfitRecord] {
+  public query ({ caller = _ }) func listRecordsByExecutive(token : Text, executiveName : Text) : async [ProfitRecord] {
     switch (validateSessionToken(token)) {
       case (?_) {
         let filtered = profitRecords.values().toArray().filter(
